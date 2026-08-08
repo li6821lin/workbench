@@ -1,0 +1,2217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="工作台">
+<meta name="theme-color" content="#FFE8F0">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='42' fill='%23FFE8F0'/%3E%3Ctext x='96' y='130' font-size='90' text-anchor='middle'%3E%E2%9C%85%3C/text%3E%3C/svg%3E">
+<title>工作台 · 完整版</title>
+<style>
+/* ===== 基础变量 ===== */
+:root{
+  --pink-bg:#FFE8F0;
+  --blue-bg:#E6F2FF;
+  --card-bg:#FFFFFF;
+  --radius:18px;
+  --radius-sm:12px;
+  --divider:#E8ECF0;
+  --text-main:#3A3A3A;
+  --text-sub:#7A7A7A;
+  --text-light:#A0A0A0;
+  --sidebar-w:100px;
+  --shadow:0 2px 12px rgba(120,120,140,0.08);
+  --shadow-card:0 1px 8px rgba(120,120,140,0.06);
+  --accent:#E8869E;
+  --accent-blue:#6BA4D6;
+  --done-bg:#FFE8F0;
+  --undone-bg:#E6F2FF;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:linear-gradient(160deg,#FFF5F8 0%,#F0F6FF 100%);
+  color:var(--text-main);
+  font-size:14px;
+  line-height:1.5;
+}
+/* ===== App 容器 ===== */
+.app{
+  max-width:430px;
+  height:100vh;
+  margin:0 auto;
+  background:#FAFBFC;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  box-shadow:0 0 30px rgba(0,0,0,0.05);
+  overflow:hidden;
+}
+
+/* ===== Header ===== */
+.header{
+  padding:14px 16px 12px;
+  background:linear-gradient(135deg,var(--pink-bg) 0%,var(--blue-bg) 100%);
+  flex-shrink:0;
+  z-index:10;
+}
+.header-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.greeting{font-size:18px;font-weight:700;color:#3A3A3A;}
+.date-text{font-size:11px;color:#6A6A6A;margin-top:2px;}
+
+/* 今日总览卡片 */
+.today-card{
+  background:rgba(255,255,255,0.85);
+  border-radius:14px;
+  padding:10px 12px;
+  backdrop-filter:blur(6px);
+}
+.today-card-title{
+  font-size:12px;
+  font-weight:600;
+  color:#5A5A5A;
+  margin-bottom:8px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.today-progress-text{font-size:11px;color:var(--text-light);font-weight:400;}
+.today-bar{
+  height:5px;
+  background:#EEE;
+  border-radius:3px;
+  overflow:hidden;
+  margin-bottom:8px;
+}
+.today-bar-fill{
+  height:100%;
+  background:linear-gradient(90deg,#E8869E,#6BA4D6);
+  border-radius:3px;
+  transition:width .3s ease;
+}
+.today-list{display:flex;flex-wrap:wrap;gap:6px;}
+.today-item{
+  font-size:11px;
+  padding:4px 10px;
+  border-radius:20px;
+  background:#F5F5F5;
+  color:#777;
+  display:flex;
+  align-items:center;
+  gap:4px;
+  cursor:pointer;
+  transition:all .15s;
+  border:1px solid transparent;
+}
+.today-item.done{background:var(--done-bg);color:#C66B85;border-color:rgba(232,134,158,0.2);}
+.today-item.undone{background:var(--undone-bg);color:#4A7FB0;border-color:rgba(107,164,214,0.15);}
+.today-item:active{transform:scale(0.95);}
+.today-item .dot{width:6px;height:6px;border-radius:50%;background:#CCC;}
+.today-item.done .dot{background:#E8869E;}
+.today-item.undone .dot{background:#6BA4D6;}
+
+/* ===== 主体布局 ===== */
+.main-body{
+  flex:1;
+  display:flex;
+  overflow:hidden;
+}
+
+/* ===== 侧边栏 ===== */
+.sidebar{
+  width:var(--sidebar-w);
+  flex-shrink:0;
+  background:#F8F9FB;
+  border-right:1px solid var(--divider);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.sidebar-scroll{
+  flex:1;
+  overflow-y:auto;
+  padding:8px 0;
+  -webkit-overflow-scrolling:touch;
+}
+.sidebar-scroll::-webkit-scrollbar{width:0;}
+.sidebar-section-label{
+  font-size:9px;
+  color:var(--text-light);
+  padding:8px 12px 4px;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+}
+.sidebar-item{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:10px 4px;
+  margin:2px 8px;
+  border-radius:12px;
+  cursor:pointer;
+  transition:background .15s;
+  position:relative;
+}
+.sidebar-item:active{background:#EDEEF0;}
+.sidebar-item.active{background:#FFF;border:1px solid var(--divider);box-shadow:var(--shadow-card);}
+.sidebar-item.active .si-name{color:var(--accent);font-weight:600;}
+.si-icon{font-size:22px;margin-bottom:4px;line-height:1;}
+.si-name{font-size:10px;color:var(--text-sub);text-align:center;line-height:1.3;word-break:break-all;}
+.si-edit-btn{
+  position:absolute;
+  top:4px;right:4px;
+  width:16px;height:16px;
+  border-radius:50%;
+  background:rgba(0,0,0,0.06);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  font-size:9px;
+  color:#888;
+  line-height:1;
+}
+.sidebar-item:hover .si-edit-btn{display:flex;}
+.si-edit-btn:active{background:rgba(0,0,0,0.12);}
+
+.sidebar-add{
+  margin:8px;
+  padding:10px;
+  border-radius:12px;
+  background:#FFF;
+  border:1px dashed var(--divider);
+  text-align:center;
+  font-size:11px;
+  color:var(--text-light);
+  cursor:pointer;
+  flex-shrink:0;
+}
+.sidebar-add:active{background:#F5F5F5;}
+
+/* ===== 详情面板 ===== */
+.detail-panel{
+  flex:1;
+  overflow-y:auto;
+  padding:14px 14px 30px;
+  -webkit-overflow-scrolling:touch;
+}
+.detail-panel::-webkit-scrollbar{width:0;}
+
+.module-title{
+  font-size:16px;
+  font-weight:700;
+  color:var(--text-main);
+  margin-bottom:12px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.module-title .mt-icon{font-size:20px;}
+
+/* ===== 通用卡片 ===== */
+.card{
+  background:var(--card-bg);
+  border-radius:var(--radius);
+  padding:14px;
+  margin-bottom:12px;
+  box-shadow:var(--shadow-card);
+}
+.card-title{
+  font-size:13px;
+  font-weight:600;
+  color:#4A4A4A;
+  margin-bottom:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.card-title .ct-action{font-size:11px;color:var(--accent);cursor:pointer;font-weight:400;}
+
+/* ===== 日历组件 ===== */
+.calendar-wrap{overflow:hidden;}
+.calendar-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+.cal-month-label{font-size:14px;font-weight:600;color:#3A3A3A;}
+.cal-nav-btn{
+  width:28px;height:28px;
+  border-radius:50%;
+  border:none;
+  background:#F5F5F5;
+  font-size:14px;
+  color:#666;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.cal-nav-btn:active{background:#E8E8E8;}
+.calendar-scroll{
+  overflow-x:hidden;
+  scroll-snap-type:x mandatory;
+  display:flex;
+  scroll-behavior:smooth;
+}
+.cal-month{
+  flex:0 0 100%;
+  scroll-snap-align:start;
+}
+.cal-weekdays{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  margin-bottom:4px;
+}
+.cal-weekday{
+  text-align:center;
+  font-size:10px;
+  color:var(--text-light);
+  padding:4px 0;
+}
+.cal-grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:3px;
+}
+.cal-day{
+  aspect-ratio:1;
+  border-radius:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  cursor:pointer;
+  transition:all .15s;
+  position:relative;
+  background:#F8F8F8;
+  color:#666;
+}
+.cal-day.empty{background:transparent;cursor:default;}
+.cal-day.done{background:var(--done-bg);color:#C66B85;font-weight:600;}
+.cal-day.undone{background:var(--undone-bg);color:#4A7FB0;}
+.cal-day.today{border:2px solid var(--accent);}
+.cal-day.future{opacity:0.4;cursor:default;}
+.cal-day:active:not(.empty):not(.future){transform:scale(0.92);}
+.cal-day .has-note{
+  position:absolute;
+  bottom:2px;left:50%;
+  transform:translateX(-50%);
+  width:4px;height:4px;
+  border-radius:50%;
+  background:var(--accent);
+}
+.cal-day.done .has-note{background:#C66B85;}
+
+.cal-stats{
+  display:flex;
+  gap:8px;
+  margin-top:10px;
+}
+.cal-stat-box{
+  flex:1;
+  background:#F9FAFB;
+  border-radius:10px;
+  padding:8px 10px;
+  text-align:center;
+}
+.cal-stat-num{font-size:18px;font-weight:700;color:#3A3A3A;}
+.cal-stat-label{font-size:10px;color:var(--text-light);}
+.cal-stat-box.done-stat .cal-stat-num{color:#C66B85;}
+.cal-stat-box.rate-stat .cal-stat-num{color:var(--accent-blue);}
+
+/* ===== 输入框 ===== */
+.input-field{
+  width:100%;
+  border:1px solid var(--divider);
+  border-radius:var(--radius-sm);
+  padding:10px 12px;
+  font-size:13px;
+  color:var(--text-main);
+  background:#FAFBFC;
+  outline:none;
+  font-family:inherit;
+  resize:vertical;
+  transition:border-color .15s;
+}
+.input-field:focus{border-color:var(--accent);background:#FFF;}
+textarea.input-field{min-height:60px;}
+.input-label{font-size:11px;color:var(--text-light);margin-bottom:4px;margin-top:8px;display:block;}
+
+/* ===== 按钮 ===== */
+.btn{
+  padding:8px 16px;
+  border-radius:var(--radius-sm);
+  border:none;
+  font-size:13px;
+  cursor:pointer;
+  font-family:inherit;
+  transition:all .15s;
+}
+.btn-primary{background:var(--accent);color:#FFF;}
+.btn-primary:active{background:#D67A92;}
+.btn-secondary{background:#F0F0F0;color:#666;}
+.btn-secondary:active{background:#E5E5E5;}
+.btn-sm{padding:5px 10px;font-size:11px;}
+
+/* ===== 日历弹窗 ===== */
+.cal-modal-overlay{
+  position:fixed;
+  top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.3);
+  z-index:100;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.cal-modal-overlay.show{display:flex;}
+.cal-modal{
+  background:#FFF;
+  border-radius:var(--radius);
+  padding:16px;
+  width:100%;
+  max-width:320px;
+  box-shadow:0 10px 40px rgba(0,0,0,0.2);
+}
+.cal-modal-title{font-size:15px;font-weight:600;margin-bottom:12px;text-align:center;}
+.cal-modal-date{font-size:12px;color:var(--text-light);text-align:center;margin-bottom:12px;}
+.cal-modal-actions{display:flex;gap:8px;margin-top:12px;}
+.cal-modal-actions .btn{flex:1;}
+
+/* ===== 通用弹窗 ===== */
+.modal-overlay{
+  position:fixed;
+  top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.3);
+  z-index:200;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.modal-overlay.show{display:flex;}
+.modal-box{
+  background:#FFF;
+  border-radius:var(--radius);
+  padding:18px;
+  width:100%;
+  max-width:300px;
+  box-shadow:0 10px 40px rgba(0,0,0,0.2);
+}
+.modal-title{font-size:15px;font-weight:600;margin-bottom:12px;}
+.modal-actions{display:flex;gap:8px;margin-top:14px;}
+.modal-actions .btn{flex:1;}
+
+/* ===== 列表项 ===== */
+.list-item{
+  background:#F9FAFB;
+  border-radius:var(--radius-sm);
+  padding:10px 12px;
+  margin-bottom:8px;
+  font-size:12px;
+  color:#555;
+  position:relative;
+}
+.list-item:last-child{margin-bottom:0;}
+.list-item-title{font-weight:600;color:#3A3A3A;margin-bottom:4px;font-size:13px;}
+.list-item-desc{color:var(--text-sub);font-size:11px;}
+.list-item-actions{
+  display:flex;
+  gap:6px;
+  margin-top:6px;
+}
+.list-item-actions .btn{padding:3px 8px;font-size:10px;}
+
+/* ===== 空状态 ===== */
+.empty-state{
+  text-align:center;
+  padding:30px 16px;
+  color:var(--text-light);
+  font-size:12px;
+}
+.empty-state-icon{font-size:36px;margin-bottom:8px;opacity:0.4;}
+
+/* ===== 标签 ===== */
+.tag{
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:10px;
+  font-size:10px;
+  font-weight:500;
+}
+.tag-pink{background:var(--done-bg);color:#C66B85;}
+.tag-blue{background:var(--undone-bg);color:#4A7FB0;}
+.tag-green{background:#E8F5E9;color:#4CAF50;}
+.tag-orange{background:#FFF3E0;color:#E65100;}
+
+/* ===== 分区标签 ===== */
+.section-tabs{
+  display:flex;
+  gap:6px;
+  margin-bottom:12px;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.section-tabs::-webkit-scrollbar{width:0;height:0;}
+.section-tab{
+  padding:6px 14px;
+  border-radius:20px;
+  font-size:12px;
+  white-space:nowrap;
+  cursor:pointer;
+  background:#F0F0F0;
+  color:#777;
+  border:none;
+  font-family:inherit;
+  transition:all .15s;
+}
+.section-tab.active{background:var(--accent);color:#FFF;}
+
+/* ===== 收藏/收藏夹 ===== */
+.fav-item{
+  background:#F9FAFB;
+  border-radius:var(--radius-sm);
+  padding:10px 12px;
+  margin-bottom:8px;
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
+}
+.fav-item-content{flex:1;min-width:0;}
+.fav-item-title{font-size:13px;font-weight:600;color:#3A3A3A;word-break:break-all;}
+.fav-item-link{font-size:11px;color:var(--accent-blue);word-break:break-all;text-decoration:underline;}
+.fav-item-del{
+  color:#CCC;
+  font-size:16px;
+  cursor:pointer;
+  padding:0 4px;
+  flex-shrink:0;
+}
+
+/* ===== 步骤表单 ===== */
+.step-row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  margin-bottom:8px;
+}
+.step-row .input-field{flex:1;}
+.step-num{
+  width:24px;height:24px;
+  border-radius:50%;
+  background:var(--pink-bg);
+  color:#C66B85;
+  font-size:11px;
+  font-weight:600;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+
+/* ===== 统计表 ===== */
+.weekly-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:11px;
+}
+.weekly-table th{
+  background:#F5F5F5;
+  padding:6px;
+  text-align:center;
+  color:#777;
+  font-weight:500;
+  border-radius:6px;
+}
+.weekly-table td{
+  padding:6px;
+  text-align:center;
+  border-bottom:1px solid var(--divider);
+  color:#555;
+}
+.weekly-table td.done-cell{background:var(--done-bg);color:#C66B85;}
+.weekly-table td.undone-cell{background:var(--undone-bg);color:#4A7FB0;}
+
+/* ===== Toast ===== */
+.toast{
+  position:fixed;
+  bottom:30px;
+  left:50%;
+  transform:translateX(-50%) translateY(100px);
+  background:rgba(0,0,0,0.75);
+  color:#FFF;
+  padding:8px 20px;
+  border-radius:20px;
+  font-size:12px;
+  z-index:300;
+  transition:transform .3s ease;
+  pointer-events:none;
+  white-space:nowrap;
+}
+.toast.show{transform:translateX(-50%) translateY(0);}
+
+/* ===== 响应式 ===== */
+@media(max-width:380px){
+  :root{--sidebar-w:88px;}
+  .si-icon{font-size:20px;}
+  .si-name{font-size:9px;}
+  .detail-panel{padding:10px 10px 30px;}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="greeting" id="greeting">你好</div>
+        <div class="date-text" id="dateText"></div>
+      </div>
+    </div>
+    <div class="today-card" id="todayCard">
+      <div class="today-card-title">
+        <span>今日总览</span>
+        <span class="today-progress-text" id="todayProgressText">0/0</span>
+      </div>
+      <div class="today-bar"><div class="today-bar-fill" id="todayBarFill" style="width:0%"></div></div>
+      <div class="today-list" id="todayList"></div>
+    </div>
+  </div>
+
+  <!-- Main Body -->
+  <div class="main-body">
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-scroll" id="sidebarScroll">
+        <div class="sidebar-section-label">固定模块</div>
+        <div id="fixedModules"></div>
+        <div class="sidebar-section-label">自定义</div>
+        <div id="customModules"></div>
+      </div>
+      <div class="sidebar-add" id="addModuleBtn">+ 新增模块</div>
+    </div>
+
+    <!-- Detail Panel -->
+    <div class="detail-panel" id="detailPanel"></div>
+  </div>
+</div>
+
+<!-- Calendar Modal -->
+<div class="cal-modal-overlay" id="calModalOverlay">
+  <div class="cal-modal">
+    <div class="cal-modal-title" id="calModalTitle">打卡</div>
+    <div class="cal-modal-date" id="calModalDate"></div>
+    <textarea class="input-field" id="calModalNote" placeholder="输入备注..."></textarea>
+    <div class="cal-modal-actions">
+      <button class="btn btn-secondary" id="calModalCancel">取消</button>
+      <button class="btn btn-secondary" id="calModalUncheck">取消打卡</button>
+      <button class="btn btn-primary" id="calModalConfirm">完成打卡</button>
+    </div>
+  </div>
+</div>
+
+<!-- Generic Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <div class="modal-title" id="modalTitle">提示</div>
+    <div id="modalBody"></div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   工作台完整版 - 主逻辑
+   ============================================================ */
+
+/* ===== 常量 ===== */
+var FIXED_MODULES = [
+  { id:'m1', name:'每日随笔', icon:'✏️', fixed:true },
+  { id:'m2', name:'英语听力', icon:'🎧', fixed:true },
+  { id:'m3', name:'瑜伽拉伸', icon:'🧘', fixed:true },
+  { id:'m4', name:'化妆护肤', icon:'💄', fixed:true },
+  { id:'m5', name:'保健调理', icon:'💊', fixed:true },
+  { id:'m6', name:'经络养生', icon:'🌿', fixed:true },
+  { id:'m7', name:'理财台账', icon:'📊', fixed:true },
+  { id:'m8', name:'自媒体学', icon:'📱', fixed:true }
+];
+
+/* 日历打卡模块 ID 列表 */
+var CALENDAR_MODULES = ['m1','m2','m3'];
+
+/* ===== 状态 ===== */
+var state = {
+  currentModule: 'm1',
+  calDisplayMonth: {}, // { moduleId: { year, month } }
+  currentCalEdit: null, // { moduleId, dateStr }
+  healthTab: 'daily',
+  customModules: []
+};
+
+/* ===== 工具函数 ===== */
+function $(id){ return document.getElementById(id); }
+function formatDate(d){
+  var y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+day;
+}
+function todayStr(){ return formatDate(new Date()); }
+function getGreeting(){
+  var h = new Date().getHours();
+  if(h<6) return '夜深了';
+  if(h<11) return '早上好';
+  if(h<14) return '中午好';
+  if(h<18) return '下午好';
+  if(h<22) return '晚上好';
+  return '夜深了';
+}
+function getDateText(){
+  var d = new Date();
+  var weeks = ['日','一','二','三','四','五','六'];
+  return (d.getMonth()+1)+'月'+d.getDate()+'日 星期'+weeks[d.getDay()];
+}
+function showToast(msg){
+  var t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 1800);
+}
+
+/* ===== Storage ===== */
+function lsGet(key){
+  try{ return JSON.parse(localStorage.getItem(key)); }catch(e){ return null; }
+}
+function lsSet(key, val){
+  localStorage.setItem(key, JSON.stringify(val));
+}
+function calKey(moduleId, dateStr){
+  return 'cal_'+moduleId+'_'+dateStr;
+}
+function getCalData(moduleId, dateStr){
+  return lsGet(calKey(moduleId, dateStr)) || { done:false, note:'' };
+}
+function setCalData(moduleId, dateStr, data){
+  lsSet(calKey(moduleId, dateStr), data);
+}
+function getCustomModules(){
+  return lsGet('custom_modules') || [];
+}
+function setCustomModules(modules){
+  lsSet('custom_modules', modules);
+}
+function getAllModules(){
+  return FIXED_MODULES.concat(state.customModules);
+}
+function findModule(id){
+  return getAllModules().filter(function(m){ return m.id===id; })[0];
+}
+
+/* ===== 日期辅助 ===== */
+function daysInMonth(year, month){
+  return new Date(year, month+1, 0).getDate();
+}
+function firstDayOfWeek(year, month){
+  return new Date(year, month, 1).getDay();
+}
+function isSameDay(d1, d2){
+  return d1.getFullYear()===d2.getFullYear() && d1.getMonth()===d2.getMonth() && d1.getDate()===d2.getDate();
+}
+function isFuture(dateStr){
+  var d = new Date(dateStr);
+  var today = new Date();
+  today.setHours(23,59,59,999);
+  return d > today;
+}
+
+/* ============================================================
+   渲染：Header / 今日总览
+   ============================================================ */
+function renderHeader(){
+  $('greeting').textContent = getGreeting();
+  $('dateText').textContent = getDateText();
+  renderTodayCard();
+}
+
+function renderTodayCard(){
+  var today = todayStr();
+  var items = [];
+  var doneCount = 0;
+  var totalCount = 0;
+
+  // 从日历模块提取
+  CALENDAR_MODULES.forEach(function(mid){
+    var m = findModule(mid);
+    if(!m) return;
+    var data = getCalData(mid, today);
+    totalCount++;
+    if(data.done) doneCount++;
+    items.push({
+      moduleId: mid,
+      name: m.name,
+      icon: m.icon,
+      done: data.done
+    });
+  });
+
+  // 化妆护肤：今日打卡（无日历，但有今日护肤打卡概念）
+  // 保健调理：今日打卡
+  // 这些模块无日历，但我们在今日总览中仍可展示
+  var extraModules = [
+    { moduleId:'m4', name:'护肤打卡', icon:'💄' },
+    { moduleId:'m5', name:'保健服用', icon:'💊' },
+    { moduleId:'m7', name:'盈亏记录', icon:'📊' },
+    { moduleId:'m8', name:'文案学习', icon:'📱' }
+  ];
+  extraModules.forEach(function(em){
+    var key = 'today_extra_'+em.moduleId+'_'+today;
+    var done = lsGet(key) || false;
+    totalCount++;
+    if(done) doneCount++;
+    items.push({
+      moduleId: em.moduleId,
+      name: em.name,
+      icon: em.icon,
+      done: done,
+      isExtra: true
+    });
+  });
+
+  // 渲染进度条
+  var pct = totalCount > 0 ? Math.round(doneCount/totalCount*100) : 0;
+  $('todayProgressText').textContent = doneCount+'/'+totalCount;
+  $('todayBarFill').style.width = pct+'%';
+
+  // 渲染列表
+  var listEl = $('todayList');
+  listEl.innerHTML = '';
+  items.forEach(function(item){
+    var el = document.createElement('div');
+    el.className = 'today-item ' + (item.done ? 'done' : 'undone');
+    el.innerHTML = '<span class="dot"></span>'+item.icon+' '+item.name;
+    el.onclick = function(){
+      switchModule(item.moduleId);
+    };
+    listEl.appendChild(el);
+  });
+}
+
+/* ============================================================
+   渲染：侧边栏
+   ============================================================ */
+function renderSidebar(){
+  var fixedEl = $('fixedModules');
+  fixedEl.innerHTML = '';
+  FIXED_MODULES.forEach(function(m){
+    fixedEl.appendChild(createSidebarItem(m));
+  });
+
+  var customEl = $('customModules');
+  customEl.innerHTML = '';
+  state.customModules.forEach(function(m){
+    customEl.appendChild(createSidebarItem(m));
+  });
+
+  // 高亮当前
+  updateSidebarActive();
+}
+
+function createSidebarItem(m){
+  var el = document.createElement('div');
+  el.className = 'sidebar-item';
+  el.dataset.moduleId = m.id;
+  el.innerHTML =
+    '<div class="si-icon">'+m.icon+'</div>'+
+    '<div class="si-name">'+m.name+'</div>';
+  if(!m.fixed){
+    var editBtn = document.createElement('div');
+    editBtn.className = 'si-edit-btn';
+    editBtn.textContent = '✎';
+    editBtn.onclick = function(e){
+      e.stopPropagation();
+      showEditModuleModal(m.id);
+    };
+    el.appendChild(editBtn);
+
+    // 长按删除
+    var pressTimer = null;
+    el.addEventListener('touchstart', function(){
+      pressTimer = setTimeout(function(){
+        showEditModuleModal(m.id);
+      }, 600);
+    });
+    el.addEventListener('touchend', function(){ clearTimeout(pressTimer); });
+    el.addEventListener('touchmove', function(){ clearTimeout(pressTimer); });
+  } else {
+    // 固定模块也可重命名
+    var editBtn2 = document.createElement('div');
+    editBtn2.className = 'si-edit-btn';
+    editBtn2.textContent = '✎';
+    editBtn2.onclick = function(e){
+      e.stopPropagation();
+      showRenameModuleModal(m.id);
+    };
+    el.appendChild(editBtn2);
+  }
+  el.onclick = function(){
+    switchModule(m.id);
+  };
+  return el;
+}
+
+function updateSidebarActive(){
+  var items = document.querySelectorAll('.sidebar-item');
+  items.forEach(function(el){
+    if(el.dataset.moduleId === state.currentModule){
+      el.classList.add('active');
+    } else {
+      el.classList.remove('active');
+    }
+  });
+}
+
+function switchModule(moduleId){
+  state.currentModule = moduleId;
+  updateSidebarActive();
+  renderDetail();
+}
+
+/* ============================================================
+   渲染：详情面板
+   ============================================================ */
+function renderDetail(){
+  var m = findModule(state.currentModule);
+  if(!m) return;
+  var panel = $('detailPanel');
+
+  switch(m.id){
+    case 'm1': panel.innerHTML = renderDailyEssay(m); afterCalendarRender('m1'); break;
+    case 'm2': panel.innerHTML = renderEnglishListening(m); afterCalendarRender('m2'); break;
+    case 'm3': panel.innerHTML = renderYogaStretch(m); afterCalendarRender('m3'); break;
+    case 'm4': panel.innerHTML = renderSkincare(m); break;
+    case 'm5': panel.innerHTML = renderHealthCare(m); break;
+    case 'm6': panel.innerHTML = renderMeridianLibrary(m); break;
+    case 'm7': panel.innerHTML = renderFinance(m); break;
+    case 'm8': panel.innerHTML = renderSelfMedia(m); break;
+    default: panel.innerHTML = renderCustomModule(m); break;
+  }
+}
+
+/* ============================================================
+   模块1: 每日随笔打卡
+   ============================================================ */
+function renderDailyEssay(m){
+  var html = '';
+  html += '<div class="module-title"><span class="mt-icon">'+m.icon+'</span>'+m.name+'</div>';
+  html += renderCalendarCard('m1', '每日随笔打卡');
+  html += '<div class="card">';
+  html += '<div class="card-title">本周统计</div>';
+  html += renderWeeklyStats('m1');
+  html += '</div>';
+  return html;
+}
+
+/* ============================================================
+   模块2: 碎片英语听力打卡
+   ============================================================ */
+function renderEnglishListening(m){
+  var html = '';
+  html += '<div class="module-title"><span class="mt-icon">'+m.icon+'</span>'+m.name+'</div>';
+  html += renderCalendarCard('m2', '听力打卡');
+  html += '<div class="card">';
+  html += '<div class="card-title">进度追踪</div>';
+  html += '<label class="input-label">语调改善情况</label>';
+  html += '<textarea class="input-field" id="en_tone" placeholder="记录语调练习进展...">'+(lsGet('en_tone')||'')+'</textarea>';
+  html += '<label class="input-label">连读改善情况</label>';
+  html += '<textarea class="input-field" id="en_lianDu" placeholder="记录连读练习进展...">'+(lsGet('en_lianDu')||'')+'</textarea>';
+  html += '<button class="btn btn-primary btn-sm" style="margin-top:8px;" onclick="saveEnProgress()">保存进度</button>';
+  html += '</div>';
+  html += '<div class="card">';
+  html += '<div class="card-title">薄弱问题记录<span class="ct-action" onclick="addEnWeakness()">+ 添加</span></div>';
+  html += '<div id="enWeaknessList">'+renderEnWeakness()+'</div>';
+  html += '</div>';
+  html += '<div class="card">';
+  html += '<div class="card-title">月度统计</div>';
+  html += renderMonthlyStats('m2');
+  html += '</div>';
+  return html;
+}
+function saveEnProgress(){
+  lsSet('en_tone', $('en_tone').value);
+  lsSet('en_lianDu', $('en_lianDu').value);
+  showToast('已保存');
+}
+function renderEnWeakness(){
+  var list = lsGet('en_weakness') || [];
+  if(list.length === 0) return '<div class="empty-state"><div class="empty-state-icon">📝</div>暂无记录</div>';
+  var html = '';
+  list.forEach(function(item, i){
+    html += '<div class="list-item"><div class="list-item-title">'+item+'</div>';
+    html += '<div class="list-item-actions"><button class="btn btn-secondary btn-sm" onclick="delEnWeakness('+i+')">删除</button></div></div>';
+  });
+  return html;
+}
+function addEnWeakness(){
+  showModal('添加薄弱问题', '<input class="input-field" id="modalInput" placeholder="输入薄弱问题...">',
+    [
+      {text:'取消', class:'btn-secondary', action:hideModal},
+      {text:'添加', class:'btn-primary', action:function(){
+        var v = $('modalInput').value.trim();
+        if(!v) return;
+        var list = lsGet('en_weakness') || [];
+        list.push(v);
+        lsSet('en_weakness', list);
+        hideModal();
+        renderDetail();
+      }}
+    ]
+  );
+}
+function delEnWeakness(i){
+  var list = lsGet('en_weakness') || [];
+  list.splice(i,1);
+  lsSet('en_weakness', list);
+  renderDetail();
+}
+
+/* ============================================================
+   模块3: 瑜伽下肢拉伸打卡
+   ============================================================ */
+function renderYogaStretch(m){
+  var html = '';
+  html += '<div class="module-title"><span class="mt-icon">'+m.icon+'</span>'+m.name+'</div>';
+  html += renderCalendarCard('m3', '拉伸打卡');
+  html += '<div class="card">';
+  html += '<div class="card-title">今日拉伸记录</div>';
+  var today = todayStr();
+  var data = getCalData('m3', today);
+  html += '<label class="input-label">拉伸时长（分钟）</label>';
+  html += '<input class="input-field" type="number" id="yoga_duration" placeholder="如 20" value="'+(data.duration||'')+'">';
+  html += '<label class="input-label">身体感受</label>';
+  html += '<textarea class="input-field" id="yoga_feeling" placeholder="记录身体感受...">'+(data.feeling||'')+'</textarea>';
+  html += '<button class="btn btn-primary btn-sm" style="margin-top:8px;" onclick="saveYogaRecord()">保存记录</button>';
+  html += '</div>';
+  html += '<div class="card">';
+  html += '<div class="card-title">月度统计</div>';
+  html += renderMonthlyStats('m3');
+  html += '</div>';
+  return html;
+}
+function saveYogaRecord(){
+  var today = todayStr();
+  var data = getCalData('m3', today);
+  data.duration = $('yoga_duration').value;
+  data.feeling = $('yoga_feeling').value;
+  setCalData('m3', today, data);
+  showToast('已保存');
+}
+
+/* ============================================================
+   模块4: 化妆护肤管理
+   ============================================================ */
+function renderSkincare(m){
+  var html = '';
+  html += '<div class="module-title"><span class="mt-icon">'+m.icon+'</span>'+m.name+'</div>';
+  // 今日打卡
+  var today = todayStr();
+  var todayKey = 'today_extra_m4_'+today;
+  var todayDone = lsGet(todayKey) || false;
+  html += '<div class="card">';
+  html += '<div class="card-title">今日护肤打卡</div>';
+  html += '<div style="display:flex;align-items:center;gap:8px;">';
+  html += '<span style="font-size:13px;color:#555;">'+(todayDone?'已完成今日护肤打卡':'未打卡')+'</span>';
+  html += '<button class="btn '+(todayDone?'btn-secondary':'btn-primary')+' btn-sm" onclick="toggleExtraToday(\'m4\')">'+(todayDone?'取消打卡':'打卡')+'</button>';
+  html += '</div>';
+  html += '</div>';
+
+  // 收藏栏
+  html += '<div class="card">';
+  html += '<div class="card-title">收藏栏<span class="ct-action" onclick="addSkincareFav()">+ 添加</span></div>';
+  html += '<div id="skincareFavList">'+renderSkincareFav()+'</div>';
+  html += '</div>';
+
+  // 护肤步骤
+  html += '<div class="card">';
+  html += '<div class="card-title">护肤步骤<span class="ct-action" onclick="addSkincareStep()">+ 添加步骤</span></div>';
+  html += '<div id="skincareSteps">'+renderSkincareSteps()+'</div>';
+  html += '</div>';
+
+  // 皮肤状况台账
+  html += '<div class="card">';
+  html += '<div class="card-title">皮肤状况台账<span class="ct-action" onclick="addSkinCondition()">+ 记录</span></div>';
+  html += '<div id="skinConditionList">'+renderSkinConditions()+'</div>';
+  html += '</div>';
+
+  return html;
+}
+function renderSkincareFav(){
+  var list = lsGet('skincare_fav') || [];
+  if(list.length===0) return '<div class="empty-state"><div class="empty-state-icon">⭐</div>暂无收藏</div>';
+  var html = '';
+  list.forEach(function(item, i){
+    html += '<div class="fav-item">';
+    html += '<div class="fav-item-content">';
+    html += '<div class="fav-item-title">'+item.title+'</div>';
+    if(item.link) html += '<div class="fav-item-link">'+item.link+'</div>';
+    html += '</div>';
+    html += '<div class="fav-item-del" onclick="delSkincareFav('+i+')">×</div>';
+    html += '</div>';
+  });
+  return html;
+}
+function addSkincareFav(){
+  showModal('添加收藏', 
+    '<label class="input-label">标题</label><input class="input-field" id="modalInput" placeholder="如 美妆博主视频">'+
+    '<label class="input-label">链接/笔记</label><textarea class="input-field" id="modalInput2" placeholder="粘贴链接或笔记内容"></textarea>',
+    [
+      {text:'取消', class:'btn-secondary', action:hideModal},
+      {text:'添加', class:'btn-primary', action:function(){
+        var t = $('modalInput').value.trim();
+        if(!t) return;
+        var l = $('modalInput2').value.trim();
+        var list = lsGet('skincare_fav') || [];
+        list.push({title:t, link:l});
+        lsSet('skincare_fav', list);
+        hideModal();
+        renderDetail();
+      }}
+    ]
+  );
+}
+function delSkincareFav(i){
+  var list = lsGet('skincare_fav') || [];
+  list.splice(i,1);
+  lsSet('skincare_fav', list);
+  renderDetail();
+}
+function renderSkincareSteps(){
+  var steps = lsGet('skincare_steps') || [];
+  if(steps.length===0) return '<div class="empty-state"><div class="empty-state-icon">🧴</div>暂无步骤，点击右上角添加</div>';
+  var html = '';
+  steps.forEach(function(step, i){
+    html += '<div class="step-row">';
+    html += '<div class="step-num">'+(i+1)+'</div>';
+    html += '<input class="input-field" value="'+step+'" onchange="updateSkincareStep('+i+', this.value)">';
+    html += '<button class="btn btn-secondary btn-sm" onclick="delSkincareStep('+i+')">删</button>';
+    html += '</div>';
+  });
+  return html;
+}
+function addSkincareStep(){
+  var steps = lsGet('skincare_steps') || [];
+  steps.push('新步骤');
+  lsSet('skincare_steps', steps);
+  renderDetail();
+}
+function updateSkincareStep(i, val){
+  var steps = lsGet('skincare_steps') || [];
+  steps[i] = val;
+  lsSet('skincare_steps', steps);
+}
+function delSkincareStep(i){
+  var steps = lsGet('skincare_steps') || [];
+  steps.splice(i,1);
+  lsSet('skincare_steps', steps);
+  renderDetail();
+}
+function renderSkinConditions(){
+  var list = lsGet('skin_conditions') || [];
+  if(list.length===0) return '<div class="empty-state"><div class="empty-state-icon">📋</div>暂无记录</div>';
+  var html = '';
+  list.forEach(function(item, i){
+    html += '<div class="list-item">';
+    html += '<div class="list-item-title">'+item.date+'</div>';
+    html += '<div class="list-item-desc">'+item.desc+'</div>';
+    html += '<div class="list-item-actions"><button class="btn btn-secondary btn-sm" onclick="delSkinCondition('+i+')">删除</button></div>';
+    html += '</div>';
+  });
+  return html;
+}
+function addSkinCondition(){
+  showModal('记录皮肤状况',
+    '<label class="input-label">日期</label><input class="input-field" id="modalInput" value="'+todayStr()+'" type="date">'+
+    '<label class="input-label">状况描述</label><textarea class="input-field" id="modalInput2" placeholder="如 出油严重、麦粒肿等"></textarea>',
+    [
+      {text:'取消', class:'btn-secondary', action:hideModal},
+      {text:'添加', class:'btn-primary', action:function(){
+        var d = $('modalInput').value;
+        var desc = $('modalInput2').value.trim();
+        if(!desc) return;
+        var list = lsGet('skin_conditions') || [];
+        list.unshift({date:d, desc:desc});
+        lsSet('skin_conditions', list);
+        hideModal();
+        renderDetail();
+      }}
+    ]
+  );
+}
+function delSkinCondition(i){
+  var list = lsGet('skin_conditions') || [];
+  list.splice(i,1);
+  lsSet('skin_conditions', list);
+  renderDetail();
+}
+
+/* ============================================================
+   模块5: 保健品经期健康调理
+   ============================================================ */
+function renderHealthCare(m){
+  var html = '';
+  html += '<div class="module-title"><span class="mt-icon">'+m.icon+'</span>'+m.name+'</div>';
+
+  // 今日打卡
+  var today = todayStr();
+  var todayKey = 'today_extra_m5_'+today;
+  var todayDone = lsGet(todayKey) || false;
+  html += '<div class="card">';
+  html += '<div class="card-title">今日服用打卡</div>';
+  html += '<div style="display:flex;align-items:center;gap:8px;">';
+  html += '<span style="font-size:13px;color:#555;">'+(todayDone?'今日已服':'未打卡')+'</span>';
+  html += '<button class="btn '+(todayDone?'btn-secondary':'btn-primary')+' btn-sm" onclick="toggleExtraToday(\'m5\')">'+(todayDone?'取消':'打卡')+'</button>';
+  html += '</div>';
+  html += '</div>';
+
+  // 分区切换
+  var tab = state.healthTab || 'daily';
+  html += '<div class="section-tabs">';
+  html += '<button class="section-tab '+(tab==='daily'?'active':'')+'" onclick="switchHealthTab(\'daily\')">日常平日</button>';
+  html += '<button class="section-tab '+(tab==='period'?'active':'')+'" onclick="switchHealthTab(\'period\')">经期内</button>';
+  html += '<button class="section-tab '+(tab==='postperiod'?'active':'')+'" onclick="switchHealthTab(\'postperiod\')">经期结束后</button>';
+  html += '</div>';
+
+  // 保健品服用记录
+  html += '<div class="card">';
+  html += '<div class="card-title">'+getHealthTabName(tab)+' - 保健品服用<span class="ct-action" onclick="addSupplement()">+ 添加</span></div>';
+  html += '<div id="supplementList">'+renderSupplements(tab)+'</div>';
+  html += '</div>';
+
+  // 身体反应记录
+  html += '<div class="card">';
+  html += '<div class="card-title">身体反应记录<span class="ct-action" onclick="addBodyReaction()">+ 记录</span></div>';
+  html += '<div id="bodyReactionList">'+renderBodyReactions(tab)+'</div>';
+  html += '</div>';
+
+  // 饮食餐单
+  html += '<div class="card">';
+  html += '<div class="card-title">'+getHealthTabName(tab)+' - 饮食餐单<span class="ct-action" onclick="addDietPlan()">+ 添加</span></div>';
+  html += '<div id="dietPlanList">'+renderDietPlans(tab)+'</div>';
+  html += '</div>';
+
+  return html;
+}
+function getHealthTabName(tab){
+  if(tab==='daily') return '日常平日';
+  if(tab==='period') return '经期内';
+  if(tab==='postperiod') return '经期结束后';
+  return '';
+}
+function switchHealthTab(tab){
+  state.healthTab = tab;
+  renderDetail();
+}
+function renderSupplements(tab){
+  var list = lsGet('supplements_'+tab) || [];
+  if(list.length===0) return '<div class="empty-state"><div class="empty-state-icon">💊</div>暂无记录</div>';
+  var html = '';
+  list.forEach(function(item, i){
+    html += '<div class="list-item">';
+    html += '<div class="list-item-title">'+item.name+'</div>';
+    html += '<div class="list-item-desc">时间：'+item.time+' | 剂量：'+item.dose+'</div>';
+    if(item.note) html += '<div class="list-item-desc">备注：'+item.note+'</div>';
+    html += '<div class="list-item-actions"><button class="btn btn-secondary btn-sm" onclick="delSupplement(\''+tab+'\','+i+')">删除</button></div>';
+    html += '</div>';
+  });
+  return html;
+}
+function addSupplement(){
+  var tab = state.healthTab;
+  showModal('添加保健品',
+    '<label class="input-label">名称</label><input class="input-field" id="modalInput" placeholder="如 维生素D">'+
+    '<label class="input-label">服用时间</label><input class="input-field" id="modalInput2" placeholder="如 早饭后">'+
+    '<label class="input-label">剂量</label><input class="input-field" id="modalInput3" placeholder="如 1粒">'+
+    '<label class="input-label">备注</label><input class="input-field" id="modalInput4" placeholder="可选">',
+    [
+      {text:'取消', class:'btn-secondary', action:hideModal},
+      {text:'添加', class:'btn-primary', action:function(){
+        var n=$('modalInput').value.trim();
+        if(!n) return;
+        var list = lsGet('supplements_'+tab) || [];
+        list.push({name:n, time:$('modalInput2').value, dose:$('modalInput3').value, note:$('modalInput4').value});
+        lsSet('supplements_'+tab, list);
+        hideModal();
+        renderDetail();
+      }}
+    ]
+  );
+}
+function delSupplement(tab, i){
+  var list = lsGet('supplements_'+tab) || [];
+  list.splice(i,1);
+  lsSet('supplements_'+tab, list);
+  renderDetail();
+}
+function renderBodyReactions(tab){
+  var list = lsGet('body_reactions_'+tab) || [];
+  if(list.length===0) return '<div class="empty-state"><div class="empty-state-icon">🤒</div>暂无记录</div>';
+  var html = '';
+  list.forEach(function(item, i){
+    html += '<div class="list-item">';
+    html += '<div class="list-item-title">'+item.date+'</div>';
+    html += '<div class="list-item-desc">'+item.desc+'</div>';
+    html += '<div class="list-item-actions"><button class="btn btn-secondary btn-sm" onclick="delBodyReaction(\''+tab+'\','+i+')">删除</button></div>';
+    html += '</div>';
+  });
+  return html;
+}
+function addBodyReaction(){
+  var tab = state.healthTab;
+  showModal('记录身体反应',
+    '<label class="input-label">日期</label><input class="input-field" id="modalInput" value="'+todayStr()+'" type="date">'+
+    '<label class="input-label">反应描述</label><textarea class="input-field" id="modalInput2" placeholder="如 轻微腹痛、精力恢复等"></textarea>',
+    [
+      {text:'取消', class:'btn-secondary', action:hideModal},
+      {text:'添加', class:'btn-primary', action:function(){
+        var d=$('modalInput').value;
+        var desc=$('modalInput2').value.trim();
+        if(!desc) return;
+        var list = lsGet('body_reactions_'+tab) || [];
+        list.unshift({date:d, desc:desc});
+        lsSet('body_reactions_'+tab, list);
+        hideModal();
+        renderDetail();
+      }}
+    ]
+  );
+}
+function delBodyReaction(tab, i){
+  var list = lsGet('body_reactions_'+tab) || [];
+  list.splice(i,1);
+  lsSet('body_reactions_'+tab, list);
+  renderDetail();
+}
+function renderDietPlans(tab){
+  var list = lsGet('diet_plans_'+tab) || [];
+  if(list.length===0) return '<div class="empty-state"><div class="empty-state-icon">🍽️</div>暂无餐单</div>';
+  var html = '';
+  list.forEach(function(item, i){
+    html += '<div class="list-item">';
+    html += '<div class="list-item-title">'+item.meal+'</div>';
+    html += '<div class="list-item-desc">'+item.food+'</div>';
+    html += '<div class="list-item-actions"><button class="btn btn-secondary btn-sm" onclick="delDietPlan(\''+tab+'\','+i+')">删除</button></div>';
+    html += '</div>';
+  });
+  return html;
+}
+function addDietPlan(){
+  var tab = state.healthTab;
+  showModal('添加饮食餐单',
+    '<label class="input-label">餐次</label><input class="input-field" id="modalInput" placeholder="如 早餐">'+
+    '<label class="input-label">食物</label><textarea class="input-field" id="modalInput2" placeholder="如 红枣枸杞粥"></textarea>',
+    [
+      {text:'取消', class:'btn-secondary', action:hideModal},
+      {text:'添加', class:'btn-primary', action:function(){
+        var m=$('modalInput').value.trim();
+        if(!m) return;
+        var list = lsGet('diet_plans_'+tab) || [];
+        list.push({meal:m, food:$('modalInput2').value});
+        lsSet('diet_plans_'+tab, list);
+        hideModal();
+        renderDetail();
+      }}
+    ]
+  );
+}
+function delDietPlan(tab, i){
+  var list = lsGet('diet_plans_'+tab) || [];
+  list.splice(i,1);
+  lsSet('diet_plans_'+tab, list);
+  renderDetail();
+}
+
+/* ============================================================
+   模块6: 经络养生内容库
+   ============================================================ */
+var BUILTIN_TUTORIALS = [
+  { id:'t1', title:'拍八虚', desc:'拍打人体八个关节窝（两肘、两腋、两髀、两腘），疏通经络，排毒养生。', icon:'👏' },
+  { id:'t2', title:'肝胆刮痧', desc:'沿胆经走向刮痧，疏肝理气，改善情绪和睡眠。', icon:'🌿' },
+  { id:'t3', title:'足三里按摩', desc:'每日按揉足三里穴100次，健脾和胃，增强免疫力。', icon:'🦵' },
+  { id:'t4', title:'头部经络疏通', desc:'用木梳或手指沿头部经络线梳刮，醒脑明目。', icon:'💆' }
+];
+function renderMeridianLibrary(m){
+  var html = '';
+  html += '<div class="module-title"><span class="mt-icon">'+m.icon+'</span>'+m.name+'</div>';
+  // 内置教程
+  html += '<div class="card">';
+  html += '<div class="card-title">图文教程</div>';
+  BUILTIN_TUTORIALS.forEach(function(t){
+    var favs = lsGet('meridian_fav') || [];
+    var isFav = favs.indexOf(t.id) >= 0;
+    html += '<div class="list-item">';
+    html += '<div class="list-item-title">'+t.icon+' '+t.title+'</div>';
+    html += '<div class="list-item-desc">'+t.desc+'</div>';
+    html += '<div class="list-item-actions">';
+    html += '<button class="btn '+(isFav?'btn-primary':'btn-secondary')+' btn-sm" onclick="toggleMeridianFav(\''+t.id+'\')">'+(isFav?'已收藏':'收藏')+'</button>';
+    html += '<button class="btn btn-secondary btn-sm" onclick="showMeridianNote(\''+t.id+'\')">备注</button>';
+    html += '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+  // 收藏列表
+  html += '<div class="card">';
+  html += '<div class="card-title">我的收藏</div>';
+  html += renderMeridianFav();
+  html += '</div>';
+  // 个人实操备注
+  html += '<div class="card">';
+  html += '<div class="card-title">实操备注<span class="ct-action" onclick="addMeridianPractice()">+ 添加</span></div>';
+  html += renderMeridianPractice();
+  html += '</div>';
+  return html;
+}
+function toggleMeridianFav(tid){
+  var favs = lsGet('meridian_fav') || [];
+  var idx = favs.indexOf(tid);
+  if(idx >= 0){ favs.splice(idx,1); showToast('已取消收藏'); }
+  else { favs.push(tid); showToast('已收藏'); }
+  lsSet('meridian_fav', favs);
+  renderDetail();
+}
+function renderMeridianFav(){
+  var favs = lsGet('meridian_fav') || [];
+  if(favs.length===0) return '<div class="empty-state"><div class="empty-state-icon">⭐</div>暂无收藏</div>';
+  var html = '';
+  favs.forEach(function(fid){
+    var t = BUILTIN_TUTORIALS.filter(function(x){ return x.id===fid; })[0];
+    if(t){
+      html += '<div class="list-item"><div class="list-item-title">'+t.icon+' '+t.title+'</div><div class="list-item-desc">'+t.desc+'</div></div>';
+    }
+  });
+  return html;
+}
+function showMeridianNote(tid){
+  var t = BUILTIN_TUTORIALS.filter(function(x){ return x.id===tid; })[0];
+  var notes = lsGet('meridian_notes') || {};
+  var note = notes[tid] || '';
+  showModal(t.title+' - 个人备注',
+    '<textarea class="input-field" id="modalInput" placeholder="记录你的实操心得..." style="min-height:100px;">'+note+'</textarea>',
+    [
+      {text:'取消', class:'btn-secondary', action:hideModal},
+      {text:'保存', class:'btn-primary', action:function(){
+        var notes = lsGet('meridian_notes') || {};
+        notes[tid] = $('modalInput').value;
+        lsSet('meridian_notes', notes);
+        hideModal();
+        showToast('已保存');
+      }}
+    ]
+  );
+}
+function renderMeridianPractice(){
+  var list = lsGet('meridian_practice') || [];
+  if(list.length===0) return '<div class="empty-state"><div class="empty-state-icon">📝</div>暂无备注</div>';
+  var html = '';
+  list.forEach(function(item, i){
+    html += '<div class="list-item"><div class="list-item-title">'+item.date+'</div><div class="list-item-desc">'+item.desc+'</div>';
+    html += '<div class="list-item-actions"><button class="btn btn-secondary btn-sm" onclick="delMeridianPractice('+i+')">删除</button></div></div>';
+  });
+  return html;
+}
+function addMeridianPractice(){
+  showModal('添加实操备注',
+    '<label class="input-label">日期</label><input class="input-field" id="modalInput" value="'+todayStr()+'" type="date">'+
+    '<label class="input-label">备注内容</label><textarea class="input-field" id="modalInput2" placeholder="记录实操感受、效果等"></textarea>',
+    [
+      {text:'取消', class:'btn-secondary', action:hideModal},
+      {text:'添加', class:'btn-primary', action:function(){
+        var d=$('modalInput').value;
+        var desc=$('modalInput2').value.trim();
+        if(!desc) return;
+        var list = lsGet('meridian_practice') || [];
+        list.unshift({date:d, desc:desc});
+        lsSet('meridian_practice', list);
+        hideModal();
+        renderDetail();
+      }}
+    ]
+  );
+}
+function delMeridianPractice(i){
+  var list = lsGet('meridian_practice') || [];
+  list.splice(i,1);
+  lsSet('meridian_practice', list);
+  renderDetail();
+}
+
+/* ============================================================
+   模块7: 理财基金股票台账
+   ============================================================ */
+var BUILTIN_MARKET_NEWS = [
+  { title:'央行宣布降准0.25%', desc:'释放长期资金约5000亿元，利好银行、地产板块。', tag:'hot' },
+  { title:'新能源板块持续走强', desc:'光伏、储能概念领涨，多只个股涨停。', tag:'sector' },
+  { title:'美股科技股回调', desc:'纳指下跌1.2%，AI概念股集体调整。', tag:'global' },
+  { title:'黄金价格创新高', desc:'国际金价突破2100美元/盎司，避险情绪升温。', tag:'commodity' }
+];
+function renderFinance(m){
+  var html = '';
+  html += '<div class="module-title"><span class="mt-icon">'+m.icon+'</span>'+m.name+'</div>';
+
+  // 今日打卡
+  var today = todayStr();
+  var todayKey = 'today_extra_m7_'+today;
+  var todayDone = lsGet(todayKey) || false;
+  html += '<div class="card">';
+  html += '<div class="card-title">今日记录打卡</div>';
+  html += '<div style="display:flex;align-items:center;gap:8px;">';
+  html += '<span style="font-size:13px;color:#555;">'+(todayDone?'今日已记录':'未打卡')+'</span>';
+  html += '<button class="btn '+(todayDone?'btn-secondary':'btn-primary')+' btn-sm" onclick="toggleExtraToday(\'m7\')">'+(todayDone?'取消':'打卡')+'</button>';
+  html += '</div>';
+  html += '</div>';
+
+  // 市场热点
+  html += '<div class="card">';
+  html += '<div class="card-title">每日市场热点</div>';
+  BUILTIN_MARKET_NEWS.forEach(function(n){
+    var tagClass = n.tag==='hot' ? 'tag-orange' : (n.tag==='global' ? 'tag-blue' : 'tag-green');
+    html += '<div class="list-item">';
+    html += '<div class="list-item-title"><span class="tag '+tagClass+'">'+(n.tag==='hot'?'热点':n.tag==='sector'?'板块':n.tag==='global'?'全球':'商品')+'</span> '+n.title+'</div>';
+    html += '<div class="list-item-desc">'+n.desc+'</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // 盈亏录入
+  html += '<div class="card">';
+  html += '<div class="card-title">盈亏录入<span class="ct-action" onclick="addFinanceRecord()">+ 录入</span></div>';
+  html += renderFinanceRecords();
+  html += '</div>';
+
+  // 月度盈亏统计
+  html += '<div class="card">';
+  html += '<div class="card-title">月度盈亏统计</div>';
+  html += renderFinanceMonthlyStats();
+  html += '</div>';
+
+  // 交易备忘
+  html += '<div class="card">';
+  html += '<div class="card-title">交易备忘<span class="ct-action" onclick="addFinanceMemo()">+ 添加</span></div>';
+  html += renderFinanceMemos();
+  html += '</div>';
+
+  return html;
+}
+function renderFinanceRecords(){
+  var list = lsGet('finance_records') || [];
+  if(list.length===0) return '<div class="empty-state"><div class="empty-state-icon">📊</div>暂无记录</div>';
+  var html = '';
+  list.forEach(function(item, i){
+    var isProfit = item.amount >= 0;
+    html += '<div class="list-item">';
+    html += '<div class="list-item-title">'+item.date+' <span class="tag '+(isProfit?'tag-green':'tag-pink')+'">'+(isProfit?'盈利':'亏损')+'</span></div>';
+    html += '<div class="list-item-desc">金额：'+(isProfit?'+':'')+item.amount+' 元</div>';
+    if(item.note) html += '<div class="list-item-desc">备注：'+item.note+'</div>';
+    html += '<div class="list-item-actions"><button class="btn btn-secondary btn-sm" onclick="delFinanceRecord('+i+')">删除</button></div>';
+    html += '</div>';
+  });
+  return html;
+}
+function addFinanceRecord(){
+  showModal('录入盈亏',
+    '<label class="input-label">日期</label><input class="input-field" id="modalInput" value="'+todayStr()+'" type="date">'+
+    '<label class="input-label">金额（正=盈利，负=亏损）</label><input class="input-field" id="modalInput2" type="number" placeholder="如 500 或 -200">'+
+    '<label class="input-label">备注</label><input class="input-field" id="modalInput3" placeholder="可选">',
+    [
+      {text:'取消', class:'btn-secondary', action:hideModal},
+      {text:'录入', class:'btn-primary', action:function(){
+        var d=$('modalInput').value;
+        var amt=parseFloat($('modalInput2').value);
+        if(isNaN(amt)) return;
+        var list = lsGet('finance_records') || [];
+        list.unshift({date:d, amount:amt, note:$('modalInput3').value});
+        lsSet('finance_records', list);
+        hideModal();
+        renderDetail();
+      }}
+    ]
+  );
+}
+function delFinanceRecord(i){
+  var list = lsGet('finance_records') || [];
+  list.splice(i,1);
+  lsSet('finance_records', list);
+  renderDetail();
+}
+function renderFinanceMonthlyStats(){
+  var list = lsGet('finance_records') || [];
+  var now = new Date();
+  var monthPrefix = now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  var monthRecords = list.filter(function(r){ return r.date.startsWith(monthPrefix); });
+  var total = monthRecords.reduce(function(s,r){ return s+r.amount; }, 0);
+  var profit = monthRecords.filter(function(r){ return r.amount>0; }).reduce(function(s,r){ return s+r.amount; }, 0);
+  var loss = monthRecords.filter(function(r){ return r.amount<0; }).reduce(function(s,r){ return s+r.amount; }, 0);
+  var html = '';
+  html += '<div class="cal-stats">';
+  html += '<div class="cal-stat-box"><div class="cal-stat-num" style="color:'+(total>=0?'#4CAF50':'#C66B85')+'">'+(total>=0?'+':'')+total+'</div><div class="cal-stat-label">本月净盈亏</div></div>';
+  html += '<div class="cal-stat-box done-stat"><div class="cal-stat-num">+'+profit+'</div><div class="cal-stat-label">总盈利</div></div>';
+  html += '<div class="cal-stat-box rate-stat"><div class="cal-stat-num">'+loss+'</div><div class="cal-stat-label">总亏损</div></div>';
+  html += '</div>';
+  html += '<div style="font-size:11px;color:var(--text-light);margin-top:8px;">共 '+monthRecords.length+' 笔记录</div>';
+  return html;
+}
+function renderFinanceMemos(){
+  var list = lsGet('finance_memos') || [];
+  if(list.length===0) return '<div class="empty-state"><div class="empty-state-icon">📌</div>暂无备忘</div>';
+  var html = '';
+  list.forEach(function(item, i){
+    html += '<div class="list-item"><div class="list-item-title">'+item.title+'</div><div class="list-item-desc">'+item.content+'</div>';
+    html += '<div class="list-item-actions"><button class="btn btn-secondary btn-sm" onclick="delFinanceMemo('+i+')">删除</button></div></div>';
+  });
+  return html;
+}
+function addFinanceMemo(){
+  showModal('添加交易备忘',
+    '<label class="input-label">标题</label><input class="input-field" id="modalInput" placeholder="如 关注某某股票">'+
+    '<label class="input-label">内容</label><textarea class="input-field" id="modalInput2" placeholder="详细备忘内容"></textarea>',
+    [
+      {text:'取消', class:'btn-secondary', action:hideModal},
+      {text:'添加', class:'btn-primary', action:function(){
+        var t=$('modalInput').value.trim();
+        if(!t) return;
+        var list = lsGet('finance_memos') || [];
+        list.unshift({title:t, content:$('modalInput2').value});
+        lsSet('finance_memos', list);
+        hideModal();
+        renderDetail();
+      }}
+    ]
+  );
+}
+function delFinanceMemo(i){
+  var list = lsGet('finance_memos') || [];
+  list.splice(i,1);
+  lsSet('finance_memos', list);
+  renderDetail();
+}
+
+/* ============================================================
+   模块8: 自媒体学习素材
+   ============================================================ */
+var BUILTIN_CONTENT_IDEAS = [
+  { title:'打工人的早起仪式感', desc:'分享早起后的护肤+早餐+听力练习碎片时间利用', tag:'生活' },
+  { title:'北欧生活日常vlog', desc:'记录丹麦生活的一天，便利店/超市/通勤', tag:'vlog' },
+  { title:'低成本养生指南', desc:'分享拍八虚+足三里按摩，零成本养生法', tag:'养生' },
+  { title:'碎片英语学习法', desc:'每天5分钟听力打卡，3个月进步记录', tag:'学习' },
+  { title:'极简护肤步骤', desc:'上班族5分钟出门妆，护肤步骤拆解', tag:'美妆' }
+];
+function renderSelfMedia(m){
+  var html = '';
+  html += '<div class="module-title"><span class="mt-icon">'+m.icon+'</span>'+m.name+'</div>';
+
+  // 今日打卡
+  var today = todayStr();
+  var todayKey = 'today_extra_m8_'+today;
+  var todayDone = lsGet(todayKey) || false;
+  html += '<div class="card">';
+  html += '<div class="card-title">今日学习打卡</div>';
+  html += '<div style="display:flex;align-items:center;gap:8px;">';
+  html += '<span style="font-size:13px;color:#555;">'+(todayDone?'今日已学':'未打卡')+'</span>';
+  html += '<button class="btn '+(todayDone?'btn-secondary':'btn-primary')+' btn-sm" onclick="toggleExtraToday(\'m8\')">'+(todayDone?'取消':'打卡')+'</button>';
+  html += '</div>';
+  html += '</div>';
+
+  // 每日文案选题推荐
+  html += '<div class="card">';
+  html += '<div class="card-title">每日文案选题推荐</div>';
+  BUILTIN_CONTENT_IDEAS.forEach(function(idea){
+    var favs = lsGet('media_fav_ideas') || [];
+    var isFav = favs.indexOf(idea.title) >= 0;
+    html += '<div class="list-item">';
+    html += '<div class="list-item-title"><span class="tag tag-pink">'+idea.tag+'</span> '+idea.title+'</div>';
+    html += '<div class="list-item-desc">'+idea.desc+'</div>';
+    html += '<div class="list-item-actions">';
+    html += '<button class="btn '+(isFav?'btn-primary':'btn-secondary')+' btn-sm" onclick="toggleMediaIdeaFav(\''+idea.title.replace(/'/g,"\\'")+'\')">'+(isFav?'已收藏':'收藏')+'</button>';
+    html += '</div>';
+    html += '</div>';
+  });
+  html += '</div>';
+
+  // 创作素材库
+  html += '<div class="card">';
+  html += '<div class="card-title">创作素材库<span class="ct-action" onclick="addMediaMaterial()">+ 添加</span></div>';
+  html += renderMediaMaterials();
+  html += '</div>';
+
+  // 我的收藏
+  html += '<div class="card">';
+  html += '<div class="card-title">我的收藏</div>';
+  html += renderMediaFav();
+  html += '</div>';
+
+  return html;
+}
+function toggleMediaIdeaFav(title){
+  var favs = lsGet('media_fav_ideas') || [];
+  var idx = favs.indexOf(title);
+  if(idx >= 0){ favs.splice(idx,1); showToast('已取消收藏'); }
+  else { favs.push(title); showToast('已收藏'); }
+  lsSet('media_fav_ideas', favs);
+  renderDetail();
+}
+function renderMediaFav(){
+  var favs = lsGet('media_fav_ideas') || [];
+  if(favs.length===0) return '<div class="empty-state"><div class="empty-state-icon">⭐</div>暂无收藏</div>';
+  var html = '';
+  favs.forEach(function(title){
+    var idea = BUILTIN_CONTENT_IDEAS.filter(function(x){ return x.title===title; })[0];
+    if(idea){
+      html += '<div class="list-item"><div class="list-item-title">'+idea.title+'</div><div class="list-item-desc">'+idea.desc+'</div></div>';
+    }
+  });
+  return html;
+}
+function renderMediaMaterials(){
+  var list = lsGet('media_materials') || [];
+  if(list.length===0) return '<div class="empty-state"><div class="empty-state-icon">🎬</div>暂无素材</div>';
+  var html = '';
+  list.forEach(function(item, i){
+    html += '<div class="list-item"><div class="list-item-title">'+item.title+'</div><div class="list-item-desc">'+item.content+'</div>';
+    html += '<div class="list-item-actions"><button class="btn btn-secondary btn-sm" onclick="delMediaMaterial('+i+')">删除</button></div></div>';
+  });
+  return html;
+}
+function addMediaMaterial(){
+  showModal('添加创作素材',
+    '<label class="input-label">标题</label><input class="input-field" id="modalInput" placeholder="素材标题">'+
+    '<label class="input-label">内容</label><textarea class="input-field" id="modalInput2" placeholder="素材内容/链接/描述"></textarea>',
+    [
+      {text:'取消', class:'btn-secondary', action:hideModal},
+      {text:'添加', class:'btn-primary', action:function(){
+        var t=$('modalInput').value.trim();
+        if(!t) return;
+        var list = lsGet('media_materials') || [];
+        list.unshift({title:t, content:$('modalInput2').value});
+        lsSet('media_materials', list);
+        hideModal();
+        renderDetail();
+      }}
+    ]
+  );
+}
+function delMediaMaterial(i){
+  var list = lsGet('media_materials') || [];
+  list.splice(i,1);
+  lsSet('media_materials', list);
+  renderDetail();
+}
+
+/* ============================================================
+   自定义模块
+   ============================================================ */
+function renderCustomModule(m){
+  var html = '';
+  html += '<div class="module-title"><span class="mt-icon">'+m.icon+'</span>'+m.name+'</div>';
+  html += '<div class="card">';
+  html += '<div class="card-title">子任务列表<span class="ct-action" onclick="addCustomItem(\''+m.id+'\')">+ 添加</span></div>';
+  var items = m.items || [];
+  if(items.length===0){
+    html += '<div class="empty-state"><div class="empty-state-icon">📋</div>暂无任务，点击右上角添加</div>';
+  } else {
+    items.forEach(function(item, i){
+      html += '<div class="list-item">';
+      html += '<div class="list-item-title">'+item.name+'</div>';
+      if(item.desc) html += '<div class="list-item-desc">'+item.desc+'</div>';
+      html += '<div class="list-item-actions">';
+      html += '<button class="btn btn-secondary btn-sm" onclick="editCustomItem(\''+m.id+'\','+i+')">编辑</button>';
+      html += '<button class="btn btn-secondary btn-sm" onclick="delCustomItem(\''+m.id+'\','+i+')">删除</button>';
+      html += '</div>';
+      html += '</div>';
+    });
+  }
+  html += '</div>';
+  return html;
+}
+function addCustomItem(moduleId){
+  showModal('添加子任务',
+    '<label class="input-label">任务名称</label><input class="input-field" id="modalInput" placeholder="任务名称">'+
+    '<label class="input-label">描述</label><textarea class="input-field" id="modalInput2" placeholder="任务描述（可选）"></textarea>',
+    [
+      {text:'取消', class:'btn-secondary', action:hideModal},
+      {text:'添加', class:'btn-primary', action:function(){
+        var n=$('modalInput').value.trim();
+        if(!n) return;
+        var modules = state.customModules;
+        var m = modules.filter(function(x){ return x.id===moduleId; })[0];
+        if(m){
+          m.items = m.items || [];
+          m.items.push({name:n, desc:$('modalInput2').value});
+          setCustomModules(modules);
+        }
+        hideModal();
+        renderDetail();
+      }}
+    ]
+  );
+}
+function editCustomItem(moduleId, idx){
+  var m = state.customModules.filter(function(x){ return x.id===moduleId; })[0];
+  if(!m || !m.items[idx]) return;
+  var item = m.items[idx];
+  showModal('编辑子任务',
+    '<label class="input-label">任务名称</label><input class="input-field" id="modalInput" value="'+item.name+'">'+
+    '<label class="input-label">描述</label><textarea class="input-field" id="modalInput2">'+(item.desc||'')+'</textarea>',
+    [
+      {text:'取消', class:'btn-secondary', action:hideModal},
+      {text:'保存', class:'btn-primary', action:function(){
+        var n=$('modalInput').value.trim();
+        if(!n) return;
+        var modules = state.customModules;
+        var m2 = modules.filter(function(x){ return x.id===moduleId; })[0];
+        if(m2){
+          m2.items[idx].name = n;
+          m2.items[idx].desc = $('modalInput2').value;
+          setCustomModules(modules);
+        }
+        hideModal();
+        renderDetail();
+      }}
+    ]
+  );
+}
+function delCustomItem(moduleId, idx){
+  var modules = state.customModules;
+  var m = modules.filter(function(x){ return x.id===moduleId; })[0];
+  if(m && m.items){
+    m.items.splice(idx,1);
+    setCustomModules(modules);
+    renderDetail();
+  }
+}
+
+/* ============================================================
+   新增 / 编辑 / 删除 模块
+   ============================================================ */
+function showAddModuleModal(){
+  var icons = ['📝','🎯','📚','🎨','🏃','💧','☀️','🌙','🍎','🎵','🛒','💡','🔧','📷','✈️','🏠'];
+  var iconGrid = '';
+  icons.forEach(function(ic){
+    iconGrid += '<span class="icon-pick" data-icon="'+ic+'" style="display:inline-block;font-size:24px;padding:8px;border-radius:8px;cursor:pointer;border:1px solid transparent;">'+ic+'</span>';
+  });
+  showModal('新增模块',
+    '<label class="input-label">模块名称</label><input class="input-field" id="modalInput" placeholder="如 阅读打卡">'+
+    '<label class="input-label">选择图标</label><div id="iconGrid" style="text-align:center;">'+iconGrid+'</div>'+
+    '<input type="hidden" id="modalIcon" value="📝">',
+    [
+      {text:'取消', class:'btn-secondary', action:hideModal},
+      {text:'创建', class:'btn-primary', action:function(){
+        var n=$('modalInput').value.trim();
+        if(!n) return;
+        var icon=$('modalIcon').value || '📝';
+        var id = 'c'+Date.now();
+        state.customModules.push({id:id, name:n, icon:icon, fixed:false, items:[]});
+        setCustomModules(state.customModules);
+        hideModal();
+        renderSidebar();
+        switchModule(id);
+      }}
+    ]
+  );
+  // 绑定图标选择
+  setTimeout(function(){
+    document.querySelectorAll('.icon-pick').forEach(function(el){
+      el.onclick = function(){
+        document.querySelectorAll('.icon-pick').forEach(function(e2){ e2.style.background=''; e2.style.borderColor='transparent'; });
+        el.style.background='#FFE8F0';
+        el.style.borderColor='#E8869E';
+        $('modalIcon').value = el.dataset.icon;
+      };
+    });
+  }, 50);
+}
+function showEditModuleModal(moduleId){
+  var m = state.customModules.filter(function(x){ return x.id===moduleId; })[0];
+  if(!m) return;
+  showModal('编辑模块',
+    '<label class="input-label">模块名称</label><input class="input-field" id="modalInput" value="'+m.name+'">'+
+    '<div style="margin-top:12px;">'+
+    '<button class="btn btn-secondary btn-sm" onclick="renameFromEdit(\''+moduleId+'\')">保存名称</button> '+
+    '<button class="btn btn-primary btn-sm" style="background:#E8869E;" onclick="confirmDelModule(\''+moduleId+'\')">删除模块</button>'+
+    '</div>',
+    [
+      {text:'关闭', class:'btn-secondary', action:hideModal}
+    ]
+  );
+}
+function renameFromEdit(moduleId){
+  var n = $('modalInput').value.trim();
+  if(!n) return;
+  var m = state.customModules.filter(function(x){ return x.id===moduleId; })[0];
+  if(m){
+    m.name = n;
+    setCustomModules(state.customModules);
+    hideModal();
+    renderSidebar();
+    renderDetail();
+  }
+}
+function confirmDelModule(moduleId){
+  showModal('确认删除', '<p style="font-size:13px;color:#555;">删除后不可恢复，确定删除此模块吗？</p>',
+    [
+      {text:'取消', class:'btn-secondary', action:function(){ hideModal(); }},
+      {text:'确认删除', class:'btn-primary', action:function(){
+        state.customModules = state.customModules.filter(function(x){ return x.id!==moduleId; });
+        setCustomModules(state.customModules);
+        hideModal();
+        switchModule('m1');
+        renderSidebar();
+      }}
+    ]
+  );
+}
+function showRenameModuleModal(moduleId){
+  var m = findModule(moduleId);
+  if(!m) return;
+  showModal('重命名模块',
+    '<label class="input-label">模块名称</label><input class="input-field" id="modalInput" value="'+m.name+'">',
+    [
+      {text:'取消', class:'btn-secondary', action:hideModal},
+      {text:'保存', class:'btn-primary', action:function(){
+        var n = $('modalInput').value.trim();
+        if(!n) return;
+        // 固定模块名称存 localStorage 覆盖
+        lsSet('module_name_'+moduleId, n);
+        m.name = n;
+        hideModal();
+        renderSidebar();
+        renderDetail();
+        renderHeader();
+      }}
+    ]
+  );
+}
+
+/* ============================================================
+   日历组件渲染
+   ============================================================ */
+function renderCalendarCard(moduleId, title){
+  var now = new Date();
+  var display = state.calDisplayMonth[moduleId] || { year: now.getFullYear(), month: now.getMonth() };
+  state.calDisplayMonth[moduleId] = display;
+
+  var html = '';
+  html += '<div class="card calendar-wrap">';
+  html += '<div class="calendar-header">';
+  html += '<button class="cal-nav-btn" onclick="changeCalMonth(\''+moduleId+'\,-1)">‹</button>';
+  html += '<div class="cal-month-label">'+display.year+'年'+(display.month+1)+'月</div>';
+  html += '<button class="cal-nav-btn" onclick="changeCalMonth(\''+moduleId+'\',1)">›</button>';
+  html += '</div>';
+  html += '<div class="cal-weekdays">';
+  var weekdays = ['日','一','二','三','四','五','六'];
+  weekdays.forEach(function(w){ html += '<div class="cal-weekday">'+w+'</div>'; });
+  html += '</div>';
+  html += '<div class="cal-grid" id="calGrid_'+moduleId+'">';
+  html += renderCalendarGrid(moduleId, display.year, display.month);
+  html += '</div>';
+  html += '<div class="cal-stats">';
+  var stats = getMonthlyCalStats(moduleId, display.year, display.month);
+  html += '<div class="cal-stat-box done-stat"><div class="cal-stat-num">'+stats.done+'</div><div class="cal-stat-label">已完成</div></div>';
+  html += '<div class="cal-stat-box"><div class="cal-stat-num">'+stats.total+'</div><div class="cal-stat-label">总天数</div></div>';
+  html += '<div class="cal-stat-box rate-stat"><div class="cal-stat-num">'+stats.rate+'%</div><div class="cal-stat-label">完成率</div></div>';
+  html += '</div>';
+  html += '</div>';
+  return html;
+}
+
+function renderCalendarGrid(moduleId, year, month){
+  var total = daysInMonth(year, month);
+  var firstDay = firstDayOfWeek(year, month);
+  var today = new Date();
+  var html = '';
+  // 空格
+  for(var i=0; i<firstDay; i++){
+    html += '<div class="cal-day empty"></div>';
+  }
+  for(var d=1; d<=total; d++){
+    var dateStr = year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var data = getCalData(moduleId, dateStr);
+    var classes = 'cal-day';
+    if(data.done) classes += ' done';
+    else classes += ' undone';
+    var dateObj = new Date(year, month, d);
+    if(isSameDay(dateObj, today)) classes += ' today';
+    if(isFuture(dateStr)) classes += ' future';
+    html += '<div class="'+classes+'" onclick="onCalDayClick(\''+moduleId+'\',\''+dateStr+'\')">'+d;
+    if(data.note) html += '<div class="has-note"></div>';
+    html += '</div>';
+  }
+  return html;
+}
+
+function afterCalendarRender(moduleId){
+  // nothing extra needed since grid is in innerHTML
+}
+
+function changeCalMonth(moduleId, delta){
+  var display = state.calDisplayMonth[moduleId];
+  if(!display){
+    var now = new Date();
+    display = { year: now.getFullYear(), month: now.getMonth() };
+  }
+  var m = display.month + delta;
+  var y = display.year;
+  if(m < 0){ m = 11; y--; }
+  if(m > 11){ m = 0; y++; }
+  state.calDisplayMonth[moduleId] = { year: y, month: m };
+  // 只更新日历卡片部分
+  var grid = $('calGrid_'+moduleId);
+  if(grid){
+    grid.innerHTML = renderCalendarGrid(moduleId, y, m);
+  }
+  // 更新月份标签
+  var label = grid ? grid.parentElement.querySelector('.cal-month-label') : null;
+  if(label) label.textContent = y+'年'+(m+1)+'月';
+  // 更新统计
+  var statsContainer = grid ? grid.parentElement.querySelector('.cal-stats') : null;
+  if(statsContainer){
+    var stats = getMonthlyCalStats(moduleId, y, m);
+    statsContainer.innerHTML =
+      '<div class="cal-stat-box done-stat"><div class="cal-stat-num">'+stats.done+'</div><div class="cal-stat-label">已完成</div></div>'+
+      '<div class="cal-stat-box"><div class="cal-stat-num">'+stats.total+'</div><div class="cal-stat-label">总天数</div></div>'+
+      '<div class="cal-stat-box rate-stat"><div class="cal-stat-num">'+stats.rate+'%</div><div class="cal-stat-label">完成率</div></div>';
+  }
+}
+
+function onCalDayClick(moduleId, dateStr){
+  if(isFuture(dateStr)) return;
+  var data = getCalData(moduleId, dateStr);
+  state.currentCalEdit = { moduleId: moduleId, dateStr: dateStr };
+  $('calModalTitle').textContent = '打卡';
+  $('calModalDate').textContent = dateStr;
+  $('calModalNote').value = data.note || '';
+  $('calModalOverlay').classList.add('show');
+  setTimeout(function(){ $('calModalNote').focus(); }, 100);
+}
+
+function closeCalModal(){
+  $('calModalOverlay').classList.remove('show');
+  state.currentCalEdit = null;
+}
+
+function confirmCalModal(done){
+  if(!state.currentCalEdit) return;
+  var ce = state.currentCalEdit;
+  var data = getCalData(ce.moduleId, ce.dateStr);
+  data.done = done;
+  data.note = $('calModalNote').value;
+  setCalData(ce.moduleId, ce.dateStr, data);
+  closeCalModal();
+  renderDetail();
+  renderHeader();
+}
+
+/* ===== 日历统计 ===== */
+function getMonthlyCalStats(moduleId, year, month){
+  var total = daysInMonth(year, month);
+  var done = 0;
+  var now = new Date();
+  for(var d=1; d<=total; d++){
+    var dateStr = year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var data = getCalData(moduleId, dateStr);
+    if(data.done) done++;
+  }
+  // 只统计到今天的天数作为分母（如果是当月）
+  var nowDate = new Date();
+  if(year === nowDate.getFullYear() && month === nowDate.getMonth()){
+    total = nowDate.getDate();
+  }
+  var rate = total > 0 ? Math.round(done/total*100) : 0;
+  return { done:done, total:total, rate:rate };
+}
+
+function renderWeeklyStats(moduleId){
+  var now = new Date();
+  var dayOfWeek = now.getDay();
+  var startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - dayOfWeek);
+  var days = [];
+  for(var i=0; i<7; i++){
+    var d = new Date(startOfWeek);
+    d.setDate(startOfWeek.getDate()+i);
+    days.push(d);
+  }
+  var weekdays = ['日','一','二','三','四','五','六'];
+  var html = '<table class="weekly-table"><tr>';
+  days.forEach(function(d){ html += '<th>'+weekdays[d.getDay()]+'</th>'; });
+  html += '</tr><tr>';
+  var doneCount = 0;
+  days.forEach(function(d){
+    var ds = formatDate(d);
+    var data = getCalData(moduleId, ds);
+    if(data.done) doneCount++;
+    var cls = data.done ? 'done-cell' : (isFuture(ds) ? '' : 'undone-cell');
+    html += '<td class="'+cls+'">'+d.getDate()+'</td>';
+  });
+  html += '</tr></table>';
+  html += '<div style="font-size:11px;color:var(--text-light);margin-top:8px;text-align:center;">本周完成 '+doneCount+'/7 天</div>';
+  return html;
+}
+
+function renderMonthlyStats(moduleId){
+  var now = new Date();
+  var stats = getMonthlyCalStats(moduleId, now.getFullYear(), now.getMonth());
+  var html = '';
+  html += '<div class="cal-stats">';
+  html += '<div class="cal-stat-box done-stat"><div class="cal-stat-num">'+stats.done+'</div><div class="cal-stat-label">已完成</div></div>';
+  html += '<div class="cal-stat-box"><div class="cal-stat-num">'+stats.total+'</div><div class="cal-stat-label">总天数</div></div>';
+  html += '<div class="cal-stat-box rate-stat"><div class="cal-stat-num">'+stats.rate+'%</div><div class="cal-stat-label">完成率</div></div>';
+  html += '</div>';
+  return html;
+}
+
+/* ===== 额外今日打卡（非日历模块） ===== */
+function toggleExtraToday(moduleId){
+  var today = todayStr();
+  var key = 'today_extra_'+moduleId+'_'+today;
+  var done = lsGet(key) || false;
+  lsSet(key, !done);
+  renderDetail();
+  renderHeader();
+}
+
+/* ============================================================
+   通用弹窗
+   ============================================================ */
+function showModal(title, bodyHTML, actions){
+  $('modalTitle').textContent = title;
+  $('modalBody').innerHTML = bodyHTML;
+  var actionsEl = $('modalActions');
+  actionsEl.innerHTML = '';
+  actions.forEach(function(a){
+    var btn = document.createElement('button');
+    btn.className = 'btn ' + a.class;
+    btn.textContent = a.text;
+    btn.onclick = a.action;
+    actionsEl.appendChild(btn);
+  });
+  $('modalOverlay').classList.add('show');
+}
+function hideModal(){
+  $('modalOverlay').classList.remove('show');
+}
+
+/* ============================================================
+   PWA: 内嵌 manifest + service worker
+   ============================================================ */
+function setupPWA(){
+  // Manifest
+  var manifest = {
+    name: '工作台完整版',
+    short_name: '工作台',
+    description: '每日工作台 - 随笔/英语/瑜伽/护肤/保健/养生/理财/自媒体',
+    start_url: '.',
+    display: 'standalone',
+    orientation: 'portrait',
+    background_color: '#FAFBFC',
+    theme_color: '#FFE8F0',
+    icons: [
+      {
+        src: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"%3E%3Crect width="192" height="192" rx="42" fill="%23FFE8F0"/%3E%3Ctext x="96" y="130" font-size="90" text-anchor="middle"%3E%E2%9C%85%3C/text%3E%3C/svg%3E',
+        sizes: '192x192',
+        type: 'image/svg+xml'
+      },
+      {
+        src: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"%3E%3Crect width="512" height="512" rx="112" fill="%23FFE8F0"/%3E%3Ctext x="256" y="350" font-size="240" text-anchor="middle"%3E%E2%9C%85%3C/text%3E%3C/svg%3E',
+        sizes: '512x512',
+        type: 'image/svg+xml'
+      }
+    ]
+  };
+  var manifestBlob = new Blob([JSON.stringify(manifest)], { type:'application/json' });
+  var manifestURL = URL.createObjectURL(manifestBlob);
+  var link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = manifestURL;
+  document.head.appendChild(link);
+
+  // Service Worker
+  if('serviceWorker' in navigator){
+    var swCode = [
+      'var CACHE_NAME = "workbench-v1";',
+      'self.addEventListener("install", function(e){',
+      '  self.skipWaiting();',
+      '});',
+      'self.addEventListener("activate", function(e){',
+      '  e.waitUntil(self.clients.claim());',
+      '});',
+      'self.addEventListener("fetch", function(e){',
+      '  if(e.request.method !== "GET") return;',
+      '  e.respondWith(',
+      '    caches.open(CACHE_NAME).then(function(cache){',
+      '      return cache.match(e.request).then(function(cached){',
+      '        var fetchPromise = fetch(e.request).then(function(networkResp){',
+      '          if(networkResp && networkResp.status === 200 && e.request.url.startsWith(self.location.origin)){',
+      '            cache.put(e.request, networkResp.clone());',
+      '          }',
+      '          return networkResp;',
+      '        }).catch(function(){ return cached; });',
+      '        return cached || fetchPromise;',
+      '      });',
+      '    })',
+      '  );',
+      '});'
+    ].join('\n');
+    var swBlob = new Blob([swCode], { type:'application/javascript' });
+    var swURL = URL.createObjectURL(swBlob);
+    navigator.serviceWorker.register(swURL).then(function(){
+      // registered
+    }).catch(function(){
+      // ignore
+    });
+  }
+}
+
+/* ============================================================
+   初始化
+   ============================================================ */
+function init(){
+  // 加载固定模块自定义名称
+  FIXED_MODULES.forEach(function(m){
+    var savedName = lsGet('module_name_'+m.id);
+    if(savedName) m.name = savedName;
+  });
+
+  // 加载自定义模块
+  state.customModules = getCustomModules();
+
+  setupPWA();
+  renderHeader();
+  renderSidebar();
+  renderDetail();
+
+  // 绑定日历弹窗事件
+  $('calModalCancel').onclick = closeCalModal;
+  $('calModalConfirm').onclick = function(){ confirmCalModal(true); };
+  $('calModalUncheck').onclick = function(){ confirmCalModal(false); };
+  $('calModalOverlay').onclick = function(e){
+    if(e.target === $('calModalOverlay')) closeCalModal();
+  };
+
+  // 绑定弹窗关闭
+  $('modalOverlay').onclick = function(e){
+    if(e.target === $('modalOverlay')) hideModal();
+  };
+
+  // 新增模块按钮
+  $('addModuleBtn').onclick = showAddModuleModal;
+}
+
+// 启动
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+</script>
+</body>
+</html>
